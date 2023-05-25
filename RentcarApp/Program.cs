@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddSwaggerGen();
 
 
-
+// dsadasd
 
 builder.Services.AddDbContext<RentcarContext>(option =>{
     option.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
