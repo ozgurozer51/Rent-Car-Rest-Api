@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RentcarApp.Models;
+using RentcarApp.Service;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,8 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 });
 
+
+
 // JWT configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -27,22 +30,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "your_issuer",
-            ValidAudience = "your_audience",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key")),
+            ValidIssuer = "RentcarApp",
+            ValidAudience = "RestApi",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("S3cr3tK3y")),
         };
     });
 
 builder.Services.AddSwaggerGen();
 
 
-// dsadasd
 
 builder.Services.AddDbContext<RentcarContext>(option =>{
     option.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-
+// Add AuthService
+builder.Services.AddScoped<AuthService>();
 
 
 var app = builder.Build();
