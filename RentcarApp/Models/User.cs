@@ -8,5 +8,7 @@ namespace RentcarApp.Models
         public int authority_id { get; set; }
         public string? password { get; set; }
         public string? e_mail { get; set; }
+        public string? token { get; set; }
+
     }
 }

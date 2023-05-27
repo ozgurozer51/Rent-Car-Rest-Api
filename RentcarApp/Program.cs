@@ -22,19 +22,24 @@ builder.Services.AddSwaggerGen(c =>
 
 // JWT configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = "RentcarApp",
-            ValidAudience = "RestApi",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("S3cr3tK3y")),
-        };
-    });
+      .AddJwtBearer(options =>
+      {
+          var configuration = new ConfigurationBuilder()
+              .SetBasePath(AppContext.BaseDirectory)
+              .AddJsonFile("appsettings.json")
+              .Build();
+
+          options.TokenValidationParameters = new TokenValidationParameters
+          {
+              ValidateIssuer = true,
+              ValidateAudience = true,
+              ValidateLifetime = true,
+              ValidateIssuerSigningKey = true,
+              ValidIssuer = configuration["JwtSettings:Issuer"],
+              ValidAudience = configuration["JwtSettings:Audience"],
+              IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"])),
+          };
+      });
 
 builder.Services.AddSwaggerGen();
 

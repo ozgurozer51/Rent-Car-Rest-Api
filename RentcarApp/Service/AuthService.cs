@@ -6,8 +6,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
 
+
 namespace RentcarApp.Service
 {
+
+
+
+
     public class AuthService
     {
         private readonly RentcarContext _context;
@@ -19,33 +24,78 @@ namespace RentcarApp.Service
             _configuration = configuration;
         }
 
-        public bool ValidateCredentials(string username, string password)
+        public bool ValidateCredentials(string email, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.e_mail == username && u.password == password);
-            return user != null;
+            var user = _context.Users.FirstOrDefault(u => u.e_mail == email && u.password == password);
+
+            if (user != null)
+            {
+                // Token süresini kontrol et
+                var tokenExpired = IsTokenExpired(user.token);
+                if (tokenExpired)
+                {
+                    // Token süresi dolmuş, gerekli işlemleri gerçekleştir
+                    // Örneğin, yeni bir token almak için kullanıcıyı yönlendir
+                    // veya oturumu sonlandırabilirsiniz.
+                }
+
+                var jwtToken = GenerateJwtToken(email);
+
+                // Tokeni users tablosundaki token sütununa kaydet
+                user.token = jwtToken;
+                _context.SaveChanges();
+
+                return true;
+            }
+
+            return false;
         }
 
-        public string GenerateJwtToken(string username)
+        private bool IsTokenExpired(string? token)
         {
-            var secretKey = _configuration["Jwt:SecretKey"];
-            var issuer = _configuration["Jwt:Issuer"];
-            var audience = _configuration["Jwt:Audience"];
-            var expiryInMinutes = Convert.ToInt32(_configuration["Jwt:ExpiryInMinutes"]);
+
+            if (token == null)
+            {
+                // Token null ise, süresi dolmuş kabul edilir
+                return true;
+            }
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var expirationDate = jwtToken.ValidTo;
+            var currentDate = DateTime.UtcNow;
+
+            return currentDate > expirationDate;
+        }
+
+        public string GenerateJwtToken(string e_mail)
+        {
+
+            var secretKey = _configuration["JwtSettings:SecretKey"];
+            var issuer = _configuration["JwtSettings:Issuer"];
+            var audience = _configuration["JwtSettings:Audience"];
+            var expiryInMinutes = Convert.ToInt32(_configuration["JwtSettings:ExpiryInMinutes"]);
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                expires: DateTime.UtcNow.AddMinutes(expiryInMinutes),
-                signingCredentials: credentials
-            );
+            issuer: issuer,
+            audience: audience,
+            expires: DateTime.UtcNow.AddMinutes(expiryInMinutes),
+            signingCredentials: credentials
+                       );
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var encodedToken = tokenHandler.WriteToken(token);
 
+
+
             return encodedToken;
         }
+
     }
 }

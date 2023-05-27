@@ -13,8 +13,8 @@ namespace RentcarApp.Controllers
     [Route("Userlist")]
     public class UserController : ControllerBase
     {
-        private readonly RentcarContext _context;
-        private readonly AuthService _authService;
+        public readonly RentcarContext _context;
+        public readonly AuthService _authService;
 
         public UserController(RentcarContext context, AuthService authService)
         {
